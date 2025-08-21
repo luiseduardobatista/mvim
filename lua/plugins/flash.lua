@@ -6,12 +6,8 @@ later(function()
 
 	local flash = require("flash")
 
-	-- CORREÇÃO AQUI:
-	-- Em vez de tentar deletar, mapeamos 's' para não fazer nada (No Operation).
-	-- Isso desabilita o comando embutido e remove o delay.
 	vim.keymap.set({ "n", "x" }, "s", "<Nop>", { noremap = true, silent = true })
 
-	-- Agora, seus mapeamentos para o flash.nvim podem ser definidos sem conflito.
 	vim.keymap.set({ "n", "x", "o" }, "s", function() flash.jump() end, { desc = "Flash: Jump" })
 	vim.keymap.set({ "n", "o", "x" }, "S", function() flash.treesitter() end, { desc = "Flash: Treesitter" })
 	vim.keymap.set("o", "r", function() flash.remote() end, { desc = "Flash: Remote" })

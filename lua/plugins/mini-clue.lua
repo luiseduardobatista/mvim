@@ -32,14 +32,13 @@ miniclue.setup({
 		{ mode = "x", keys = "z" },
 	},
 	window = {
-		delay = 200, -- Delay de 200 ms, como no which-key do LazyVim
+		delay = 200,
 		config = {
 			width = "auto",
-			border = "double", -- Estilo da borda
+			border = "double",
 		},
 	},
 	clues = {
-		-- Enhance this by adding descriptions for <Leader> mapping groups
 		miniclue.gen_clues.builtin_completion(),
 		miniclue.gen_clues.g(),
 		miniclue.gen_clues.marks(),

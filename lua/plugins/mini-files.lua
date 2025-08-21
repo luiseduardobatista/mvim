@@ -1,6 +1,6 @@
 local now, later = MiniDeps.now, MiniDeps.later
 
-now(function()
+later(function()
 	require("mini.files").setup({
 		windows = {
 			preview = true,
@@ -8,14 +8,13 @@ now(function()
 			width_preview = 30,
 		},
 		options = {
-			use_as_default_explorer = true,
+			use_as_default_explorer = false,
 			permanent_delete = false,
 		},
 		mappings = {
 			go_in_plus = "l",
 			go_out_plus = "h",
 			toggle_hidden = "g.",
-
 			-- Ação nativa para mudar o diretório de trabalho (CWD) para o do explorador
 			reveal_cwd = "@",
 			go_in_split = "<C-w>s",
