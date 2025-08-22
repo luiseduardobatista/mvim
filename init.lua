@@ -29,4 +29,5 @@ end
 
 require("options")
 require("keymaps")
+require("config.autocmds")
 load_plugins()
