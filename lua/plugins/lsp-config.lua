@@ -13,20 +13,16 @@ vim.api.nvim_create_autocmd("VimEnter", {
 
 local add, now, later = MiniDeps.add, MiniDeps.now, MiniDeps.later
 
+add("neovim/nvim-lspconfig")
+add("williamboman/mason.nvim")
+add("williamboman/mason-lspconfig.nvim")
+add("WhoIsSethDaniel/mason-tool-installer.nvim")
+
+-- 2. Configure the plugins
+-- The order here is important. Mason must be configured before plugins that depend on it.
+require("mason").setup({})
+
 later(function()
-	add("neovim/nvim-lspconfig")
-	-- Automatically install LSPs and related tools to stdpath for Neovim
-	add("williamboman/mason.nvim")
-	add("williamboman/mason-lspconfig.nvim")
-	add("WhoIsSethDaniel/mason-tool-installer.nvim")
-	-- Useful status updates for LSP.
-	add("j-hui/fidget.nvim")
-
-	-- 2. Configure the plugins
-	-- The order here is important. Mason must be configured before plugins that depend on it.
-	require("mason").setup({})
-	require("fidget").setup({})
-
 	-- ====================================================================
 	-- Brief aside: **What is LSP?**
 	--

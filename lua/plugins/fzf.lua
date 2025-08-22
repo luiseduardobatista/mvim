@@ -1,6 +1,6 @@
-local add, now = MiniDeps.add, MiniDeps.now
+local add, later = MiniDeps.add, MiniDeps.later
 
-now(function()
+later(function()
 	add("ibhagwan/fzf-lua")
 
 	local fzf = require("fzf-lua")
@@ -113,7 +113,6 @@ now(function()
 		})
 	end
 	fzf.register_ui_select(ui_select_handler)
-	vim.ui.select = fzf.ui_select
 
 	local map = vim.keymap.set
 	local fzf_map = function(keys, func, desc, opts)
@@ -148,9 +147,9 @@ now(function()
 	end, "Arquivos Recentes (global)")
 
 	-- Grep
-	fzf_map("<leader>/", function()
+	fzf_map("<leader>sg", function()
 		fzf.live_grep()
-	end, "Grep (Raiz)")
+	end, "Live Grep (Root dir)")
 	fzf_map("<leader>sw", function()
 		fzf.grep_cword()
 	end, "Grep Palavra (Raiz)")
@@ -165,7 +164,7 @@ now(function()
 	end, "Grep Seleção (Raiz)")
 	fzf_map_v("<leader>sW", function()
 		fzf.grep_visual({ cwd_only = true })
-	end, "Grep Seleção (cwd)")
+	end, "Live Grep (cwd)")
 
 	-- Git
 	fzf_map("<leader>gc", function()
