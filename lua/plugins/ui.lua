@@ -13,5 +13,9 @@ later(function()
 end)
 
 later(function()
-	require("mini.notify").setup()
+	require("mini.notify").setup({
+		lsp_progress = {
+			enable = false,
+		},
+	})
 end)

@@ -14,13 +14,15 @@ vim.api.nvim_create_autocmd("VimEnter", {
 local add, now, later = MiniDeps.add, MiniDeps.now, MiniDeps.later
 
 add("neovim/nvim-lspconfig")
-add("williamboman/mason.nvim")
-add("williamboman/mason-lspconfig.nvim")
+add("mason-org/mason.nvim")
+add("mason-org/mason-lspconfig.nvim")
 add("WhoIsSethDaniel/mason-tool-installer.nvim")
+add("j-hui/fidget.nvim")
 
 -- 2. Configure the plugins
 -- The order here is important. Mason must be configured before plugins that depend on it.
 require("mason").setup({})
+require("fidget").setup({})
 
 later(function()
 	-- ====================================================================
@@ -64,7 +66,7 @@ later(function()
 			-- for LSP related items. It sets the mode and description for us each time.
 			local map = function(keys, func, desc, mode)
 				mode = mode or "n"
-				vim.keymap.set(mode, keys, func, { desc = desc })
+				vim.keymap.set(mode, keys, func, { buffer = event.buf, desc = desc })
 			end
 
 			-- Jump to the definition of the word under your cursor.
@@ -204,6 +206,24 @@ later(function()
 		bashls = {},
 		marksman = {},
 		lua_ls = {},
+		basedpyright = {
+			init_options = {
+				settings = {
+					logLevel = "error",
+				},
+			},
+		},
+		ruff = {
+			init_options = {
+				settings = {
+					logLevel = "error",
+				},
+			},
+			on_attach = function(client, bufnr)
+				-- Desativa o hover do ruff para dar preferência ao basedpyright
+				client.server_capabilities.hoverProvider = false
+			end,
+		},
 	}
 
 	-- Ensure the servers and tools above are installed
