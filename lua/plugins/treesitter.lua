@@ -1,3 +1,4 @@
+-- treesitter.lua
 local add, later = MiniDeps.add, MiniDeps.later
 
 later(function()
@@ -32,6 +33,8 @@ later(function()
 			"markdown_inline",
 			"ninja",
 			"rst",
+			"rust",
+			"ron",
 		},
 		auto_install = true,
 		sync_install = false,

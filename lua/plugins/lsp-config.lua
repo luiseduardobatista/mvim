@@ -18,7 +18,7 @@ add("WhoIsSethDaniel/mason-tool-installer.nvim")
 add("j-hui/fidget.nvim")
 
 require("mason").setup({})
-require("fidget").setup({})
+-- require("fidget").setup({})
 
 later(function()
 	vim.api.nvim_create_autocmd("LspAttach", {
@@ -122,6 +122,7 @@ later(function()
 		marksman = {},
 		lua_ls = {},
 		basedpyright = {},
+		rust_analyzer = { enabled = false },
 		ruff = {
 			init_options = {
 				settings = {
