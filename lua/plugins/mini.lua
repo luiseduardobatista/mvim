@@ -23,11 +23,14 @@ later(function()
 	require("mini.statusline").setup()
 	require("mini.icons").setup()
 	require("mini.indentscope").setup({ symbol = "│" })
-	require("mini.notify").setup({
+	local mini_notify = require("mini.notify")
+	mini_notify.setup({
 		lsp_progress = {
 			enable = false,
 		},
 	})
+
+	vim.notify = mini_notify.make_notify()
 
 	require("mini.files").setup({
 		windows = {
