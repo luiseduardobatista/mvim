@@ -1,42 +1,61 @@
-local now, add = MiniDeps.now, MiniDeps.add
+local add, now = MiniDeps.add, MiniDeps.now
 
 now(function()
 	add("ibhagwan/fzf-lua")
-	local fzf_config = require("fzf-lua").config
-	fzf_config.defaults.keymap.fzf["ctrl-q"] = "select-all+accept"
-	fzf_config.defaults.keymap.fzf["ctrl-u"] = "half-page-up"
-	fzf_config.defaults.keymap.fzf["ctrl-d"] = "half-page-down"
-	fzf_config.defaults.actions.files["ctrl-r"] = function(_, ctx)
+
+	local fzf = require("fzf-lua")
+
+	local function get_image_previewer()
+		local previewers = {
+			{ cmd = "ueberzug", args = {} },
+			{ cmd = "chafa", args = { "{file}", "--format=symbols" } },
+			{ cmd = "viu", args = { "-b" } },
+		}
+		for _, p in ipairs(previewers) do
+			if vim.fn.executable(p.cmd) == 1 then
+				return vim.list_extend({ p.cmd }, p.args)
+			end
+		end
+		return nil
+	end
+
+	-- Ação customizada para alternar entre diretório raiz e atual (cwd)
+	local toggle_root_dir_action = function(_, ctx)
 		local o = vim.deepcopy(ctx.__call_opts)
 		o.cwd_only = not o.cwd_only
-		require("fzf-lua").files(o)
+		fzf.files(o)
 	end
-	require("fzf-lua").config.set_action_helpstr(fzf_config.defaults.actions.files["ctrl-r"], "toggle-root-dir")
-	local img_previewer
-	for _, v in ipairs({
-		{ cmd = "ueberzug", args = {} },
-		{ cmd = "chafa", args = { "{file}", "--format=symbols" } },
-		{ cmd = "viu", args = { "-b" } },
-	}) do
-		if vim.fn.executable(v.cmd) == 1 then
-			img_previewer = vim.list_extend({ v.cmd }, v.args)
-			break
-		end
-	end
-	local opts = {
+	-- Define o texto de ajuda para a ação
+	fzf.config.set_action_helpstr(toggle_root_dir_action, "toggle-root-dir")
+
+	fzf.setup({
 		profiles = {
 			["default-title"] = {
-				prompt = " ",
+				prompt = " ",
 				winopts = {
-					title = " " .. "FZF" .. " ",
+					title = " FZF ",
 					title_pos = "center",
 				},
 			},
 		},
+
 		fzf_colors = true,
+
 		defaults = {
 			profile = "default-title",
 			formatter = "path.dirname_first",
+			keymap = {
+				fzf = {
+					["ctrl-q"] = "select-all+accept",
+					["ctrl-u"] = "half-page-up",
+					["ctrl-d"] = "half-page-down",
+				},
+			},
+			actions = {
+				files = {
+					["ctrl-r"] = toggle_root_dir_action,
+				},
+			},
 		},
 		winopts = {
 			width = 0.8,
@@ -44,7 +63,7 @@ now(function()
 			row = 0.5,
 			col = 0.5,
 			preview = {
-				hidden = false,
+				hidden = true,
 				layout = "horizontal",
 				horizontal = "right:45%",
 				scrollchars = { "┃", "" },
@@ -52,13 +71,13 @@ now(function()
 		},
 		previewers = {
 			builtin = {
-				syntax_limit_b = 1024 * 100,
+				syntax_limit_b = 1024 * 100, -- 100KB
 				extensions = {
-					["png"] = img_previewer,
-					["jpg"] = img_previewer,
-					["jpeg"] = img_previewer,
-					["gif"] = img_previewer,
-					["webp"] = img_previewer,
+					["png"] = get_image_previewer(),
+					["jpg"] = get_image_previewer(),
+					["jpeg"] = get_image_previewer(),
+					["gif"] = get_image_previewer(),
+					["webp"] = get_image_previewer(),
 				},
 				ueberzug_scaler = "fit_contain",
 			},
@@ -66,20 +85,25 @@ now(function()
 		files = {
 			cwd_prompt = false,
 		},
+		oldfiles = {
+			include_current_session = true,
+		},
 		lsp = {
 			symbols = {
 				child_prefix = false,
 			},
 		},
-		oldfiles = {
-			include_current_session = true,
+		keymap = {
+			builtin = {
+				["<C-p>"] = "toggle-preview",
+			},
 		},
-	}
-	opts = vim.tbl_deep_extend("force", require("fzf-lua.profiles.default-title"), opts)
-	require("fzf-lua").setup(opts)
+	})
+
+	-- Substitui o vim.ui.select padrão pelo do fzf-lua
 	local function ui_select_handler(ui_opts, items)
 		return vim.tbl_deep_extend("force", ui_opts, {
-			prompt = " ",
+			prompt = " ",
 			winopts = {
 				title = " " .. vim.trim((ui_opts.prompt or "Select"):gsub("%s*:%s*$", "")) .. " ",
 				title_pos = "center",
@@ -88,56 +112,94 @@ now(function()
 			},
 		})
 	end
-	require("fzf-lua").register_ui_select(ui_select_handler)
-	vim.ui.select = require("fzf-lua").ui_select
-	vim.keymap.set("n", "<leader>fr", function()
-		require("fzf-lua").oldfiles({ cwd = vim.uv.cwd() })
-	end, { desc = "FZF: Arquivos Recentes (cwd)" })
-	vim.keymap.set("n", "<leader>fR", "<cmd>FzfLua oldfiles<cr>", { desc = "FZF: Arquivos Recentes (global)" })
-	vim.keymap.set("n", "<leader><space>", function()
-		require("fzf-lua").files()
-	end, { desc = "FZF: Procurar Arquivos (Raiz)" })
-	vim.keymap.set("n", "<leader>/", function()
-		require("fzf-lua").live_grep()
-	end, { desc = "FZF: Grep (Raiz)" })
-	vim.keymap.set("n", "<leader>:", "<cmd>FzfLua command_history<cr>", { desc = "FZF: Histórico de Comandos" })
-	vim.keymap.set(
-		"n",
-		"<leader>fb",
-		"<cmd>FzfLua buffers sort_mru=true sort_lastused=true<cr>",
-		{ desc = "FZF: Buffers" }
-	)
-	vim.keymap.set("n", "<leader>ff", function()
-		require("fzf-lua").files()
-	end, { desc = "FZF: Procurar Arquivos (Raiz)" })
-	vim.keymap.set("n", "<leader>fF", function()
-		require("fzf-lua").files({ cwd_only = true })
-	end, { desc = "FZF: Procurar Arquivos (cwd)" })
-	vim.keymap.set("n", "<leader>fg", "<cmd>FzfLua git_files<cr>", { desc = "FZF: Arquivos Git" })
-	vim.keymap.set("n", "<leader>gc", "<cmd>FzfLua git_commits<CR>", { desc = "FZF: Commits" })
-	vim.keymap.set("n", "<leader>gs", "<cmd>FzfLua git_status<CR>", { desc = "FZF: Git Status" })
-	vim.keymap.set("n", '<leader>s"', "<cmd>FzfLua registers<cr>", { desc = "FZF: Registradores" })
-	vim.keymap.set("n", "<leader>sb", "<cmd>FzfLua grep_curbuf<cr>", { desc = "FZF: Grep no Buffer Atual" })
-	vim.keymap.set("n", "<leader>sh", "<cmd>FzfLua help_tags<cr>", { desc = "FZF: Help Tags" })
-	vim.keymap.set("n", "<leader>sk", "<cmd>FzfLua keymaps<cr>", { desc = "FZF: Mapeamentos de Teclas" })
-	vim.keymap.set("n", "<leader>sM", "<cmd>FzfLua man_pages<cr>", { desc = "FZF: Man Pages" })
-	vim.keymap.set("n", "<leader>sR", "<cmd>FzfLua resume<cr>", { desc = "FZF: Resumir Última Busca" })
-	vim.keymap.set("n", "<leader>sw", function()
-		require("fzf-lua").grep_cword()
-	end, { desc = "FZF: Grep Palavra (Raiz)" })
-	vim.keymap.set("n", "<leader>sW", function()
-		require("fzf-lua").grep_cword({ cwd_only = true })
-	end, { desc = "FZF: Grep Palavra (cwd)" })
-	vim.keymap.set("v", "<leader>sw", function()
-		require("fzf-lua").grep_visual()
-	end, { desc = "FZF: Grep Seleção (Raiz)" })
-	vim.keymap.set("v", "<leader>sW", function()
-		require("fzf-lua").grep_visual({ cwd_only = true })
-	end, { desc = "FZF: Grep Seleção (cwd)" })
-	vim.keymap.set("n", "<leader>ss", function()
-		require("fzf-lua").lsp_document_symbols()
-	end, { desc = "FZF: Símbolos do Documento" })
-	vim.keymap.set("n", "<leader>sS", function()
-		require("fzf-lua").lsp_workspace_symbols()
-	end, { desc = "FZF: Símbolos do Workspace" })
+	fzf.register_ui_select(ui_select_handler)
+	vim.ui.select = fzf.ui_select
+
+	local map = vim.keymap.set
+	local fzf_map = function(keys, func, desc, opts)
+		opts = opts or {}
+		opts.desc = "FZF: " .. desc
+		map("n", keys, func, opts)
+	end
+	local fzf_map_v = function(keys, func, desc, opts)
+		opts = opts or {}
+		opts.desc = "FZF: " .. desc
+		map("v", keys, func, opts)
+	end
+
+	-- Arquivos, Buffers e Recentes
+	fzf_map("<leader>ff", function()
+		fzf.files()
+	end, "Procurar Arquivos (Raiz)")
+	fzf_map("<leader>fF", function()
+		fzf.files({ cwd_only = true })
+	end, "Procurar Arquivos (cwd)")
+	fzf_map("<leader>fg", function()
+		fzf.git_files()
+	end, "Arquivos Git")
+	fzf_map("<leader>fb", function()
+		fzf.buffers({ sort_mru = true, sort_lastused = true })
+	end, "Buffers")
+	fzf_map("<leader>fr", function()
+		fzf.oldfiles({ cwd = vim.uv.cwd() })
+	end, "Arquivos Recentes (cwd)")
+	fzf_map("<leader>fR", function()
+		fzf.oldfiles()
+	end, "Arquivos Recentes (global)")
+
+	-- Grep
+	fzf_map("<leader>/", function()
+		fzf.live_grep()
+	end, "Grep (Raiz)")
+	fzf_map("<leader>sw", function()
+		fzf.grep_cword()
+	end, "Grep Palavra (Raiz)")
+	fzf_map("<leader>sW", function()
+		fzf.grep_cword({ cwd_only = true })
+	end, "Grep Palavra (cwd)")
+	fzf_map("<leader>sb", function()
+		fzf.grep_curbuf()
+	end, "Grep no Buffer Atual")
+	fzf_map_v("<leader>sw", function()
+		fzf.grep_visual()
+	end, "Grep Seleção (Raiz)")
+	fzf_map_v("<leader>sW", function()
+		fzf.grep_visual({ cwd_only = true })
+	end, "Grep Seleção (cwd)")
+
+	-- Git
+	fzf_map("<leader>gc", function()
+		fzf.git_commits()
+	end, "Commits")
+	fzf_map("<leader>gs", function()
+		fzf.git_status()
+	end, "Git Status")
+
+	-- LSP
+	fzf_map("<leader>ss", function()
+		fzf.lsp_document_symbols()
+	end, "Símbolos do Documento")
+	fzf_map("<leader>sS", function()
+		fzf.lsp_workspace_symbols()
+	end, "Símbolos do Workspace")
+
+	-- Outros
+	fzf_map("<leader>:", function()
+		fzf.command_history()
+	end, "Histórico de Comandos")
+	fzf_map('<leader>s"', function()
+		fzf.registers()
+	end, "Registradores")
+	fzf_map("<leader>sh", function()
+		fzf.help_tags()
+	end, "Help Tags")
+	fzf_map("<leader>sk", function()
+		fzf.keymaps()
+	end, "Mapeamentos de Teclas")
+	fzf_map("<leader>sM", function()
+		fzf.man_pages()
+	end, "Man Pages")
+	fzf_map("<leader>sR", function()
+		fzf.resume()
+	end, "Resumir Última Busca")
 end)

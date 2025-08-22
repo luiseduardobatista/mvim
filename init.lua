@@ -19,14 +19,14 @@ end
 require("mini.deps").setup({ path = { package = path_package } })
 
 local function load_plugins()
-  local plugin_dir = vim.fn.stdpath('config') .. '/lua/plugins'
-  local files = vim.fn.glob(plugin_dir .. '/*.lua', false, true)
-  for _, file in ipairs(files) do
-    local plugin_name = vim.fn.fnamemodify(file, ':t:r') -- Extrai o nome do arquivo sem extensão
-    require('plugins.' .. plugin_name)
-  end
+	local plugin_dir = vim.fn.stdpath("config") .. "/lua/plugins"
+	local files = vim.fn.glob(plugin_dir .. "/*.lua", false, true)
+	for _, file in ipairs(files) do
+		local plugin_name = vim.fn.fnamemodify(file, ":t:r") -- Extrai o nome do arquivo sem extensão
+		require("plugins." .. plugin_name)
+	end
 end
 
-require 'options'
-require 'keymaps'
+require("options")
+require("keymaps")
 load_plugins()
