@@ -128,7 +128,7 @@ now(function()
 	end
 
 	-- Arquivos, Buffers e Recentes
-	fzf_map("<leader>ff", function()
+	fzf_map("<leader><space>", function()
 		fzf.files()
 	end, "Procurar Arquivos (Raiz)")
 	fzf_map("<leader>fF", function()
