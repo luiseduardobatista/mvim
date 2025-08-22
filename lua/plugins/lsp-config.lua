@@ -25,56 +25,15 @@ require("mason").setup({})
 require("fidget").setup({})
 
 later(function()
-	-- ====================================================================
-	-- Brief aside: **What is LSP?**
-	--
-	-- LSP is an initialism you've probably heard, but might not understand what it is.
-	--
-	-- LSP stands for Language Server Protocol. It's a protocol that helps editors
-	-- and language tooling communicate in a standardized fashion.
-	--
-	-- In general, you have a "server" which is some tool built to understand a particular
-	-- language (such as `gopls`, `lua_ls`, `rust_analyzer`, etc.). These Language Servers
-	-- (sometimes called LSP servers, but that's kind of like ATM Machine) are standalone
-	-- processes that communicate with some "client" - in this case, Neovim!
-	--
-	-- LSP provides Neovim with features like:
-	--  - Go to definition
-	--  - Find references
-	--  - Autocompletion
-	--  - Symbol Search
-	--  - and more!
-	--
-	-- Thus, Language Servers are external tools that must be installed separately from
-	-- Neovim. This is where `mason` and related plugins come into play.
-	--
-	-- If you're wondering about lsp vs treesitter, you can check out the wonderfully
-	-- and elegantly composed help section, `:help lsp-vs-treesitter`
-	-- ====================================================================
-
-	--  This function gets run when an LSP attaches to a particular buffer.
-	--    That is to say, every time a new file is opened that is associated with
-	--    an lsp (for example, opening `main.rs` is associated with `rust_analyzer`) this
-	--    function will be executed to configure the current buffer
 	vim.api.nvim_create_autocmd("LspAttach", {
 		group = vim.api.nvim_create_augroup("kickstart-lsp-attach", { clear = true }),
 		callback = function(event)
-			-- NOTE: Remember that Lua is a real programming language, and as such it is possible
-			-- to define small helper and utility functions so you don't have to repeat yourself.
-			--
-			-- In this case, we create a function that lets us more easily define mappings specific
-			-- for LSP related items. It sets the mode and description for us each time.
 			local map = function(keys, func, desc, mode)
 				mode = mode or "n"
 				vim.keymap.set(mode, keys, func, { buffer = event.buf, desc = desc })
 			end
 
-			-- Jump to the definition of the word under your cursor.
-			--  This is where a variable was first declared, or where a function is defined, etc.
-			--  To jump back, press <C-t>.
 			map("gd", require("fzf-lua").lsp_definitions, "[G]oto [D]efinition")
-
-			-- Find references for the word under your cursor.
 			map("gr", require("fzf-lua").lsp_references, "[G]oto [R]eferences")
 
 			-- Jump to the implementation of the word under your cursor.
@@ -91,12 +50,8 @@ later(function()
 			--  Similar to document symbols, except searches over your entire project.
 			map("<leader>ws", require("fzf-lua").lsp_live_workspace_symbols, "[W]orkspace [S]ymbols")
 
-			-- Rename the variable under your cursor.
-			--  Most Language Servers support renaming across files, etc.
 			map("<leader>cr", vim.lsp.buf.rename, "[R]e[n]ame")
 
-			-- Execute a code action, usually your cursor needs to be on top of an error
-			-- or a suggestion from your LSP for this to activate.
 			map("<leader>ca", require("fzf-lua").lsp_code_actions, "[C]ode [A]ction", { "n", "x" })
 
 			-- WARN: This is not Goto Definition, this is Goto Declaration.
@@ -206,13 +161,7 @@ later(function()
 		bashls = {},
 		marksman = {},
 		lua_ls = {},
-		basedpyright = {
-			init_options = {
-				settings = {
-					logLevel = "error",
-				},
-			},
-		},
+		basedpyright = {},
 		ruff = {
 			init_options = {
 				settings = {
@@ -226,11 +175,6 @@ later(function()
 		},
 	}
 
-	-- Ensure the servers and tools above are installed
-	-- To check the current status of installed tools and/or manually install
-	-- other tools, you can run `:Mason`. You can press `g?` for help in this menu.
-	-- You can add other tools here that you want Mason to install
-	-- for you, so that they are available from within Neovim.
 	local ensure_installed = vim.tbl_keys(servers or {})
 	vim.list_extend(ensure_installed, {
 		"stylua", -- Used to format Lua code
