@@ -22,7 +22,13 @@ end)
 later(function()
 	require("mini.statusline").setup()
 	require("mini.icons").setup()
-	require("mini.indentscope").setup({ symbol = "│" })
+	require("mini.indentscope").setup({
+		symbol = "│",
+		draw = {
+			delay = 0,
+			animation = require("mini.indentscope").gen_animation.none(),
+		},
+	})
 	local mini_notify = require("mini.notify")
 	mini_notify.setup({
 		lsp_progress = {
