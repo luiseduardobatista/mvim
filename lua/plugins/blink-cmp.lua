@@ -36,17 +36,18 @@ now(function()
 		},
 		completion = {
 			documentation = { auto_show = true, auto_show_delay_ms = 200 },
-		},
-		accept = {
-			auto_brackets = {
-				enabled = true,
+			accept = {
+				auto_brackets = {
+					enabled = true,
+				},
+			},
+			menu = {
+				draw = {
+					treesitter = { "lsp" },
+				},
 			},
 		},
-		menu = {
-			draw = {
-				treesitter = { "lsp" },
-			},
-		},
+
 		sources = {
 			default = { "lsp", "path", "snippets", "buffer", "lazydev" },
 			providers = {
