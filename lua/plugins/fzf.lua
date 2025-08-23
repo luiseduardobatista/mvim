@@ -27,6 +27,7 @@ later(function()
 	end
 	-- Define o texto de ajuda para a ação
 	fzf.config.set_action_helpstr(toggle_root_dir_action, "toggle-root-dir")
+	local actions = fzf.actions
 
 	fzf.setup({
 		profiles = {
@@ -84,6 +85,17 @@ later(function()
 		},
 		files = {
 			cwd_prompt = false,
+			actions = {
+				["alt-i"] = { actions.toggle_ignore },
+				["alt-h"] = { actions.toggle_hidden },
+			},
+			cwd_prompt = false,
+		},
+		grep = {
+			actions = {
+				["alt-i"] = { actions.toggle_ignore },
+				["alt-h"] = { actions.toggle_hidden },
+			},
 		},
 		oldfiles = {
 			include_current_session = true,
@@ -91,6 +103,9 @@ later(function()
 		lsp = {
 			symbols = {
 				child_prefix = false,
+			},
+			code_actions = {
+				previewer = vim.fn.executable("delta") == 1 and "codeaction_native" or nil,
 			},
 		},
 		keymap = {
