@@ -46,6 +46,12 @@ vim.api.nvim_create_autocmd("BufReadPost", {
 		if mark[1] > 0 and mark[1] <= lcount then
 			pcall(vim.api.nvim_win_set_cursor, 0, mark)
 		end
+		-- Gambiarra para corrigir o problema de não funcionar com fzf-lua/telescope. Por quê? Não faço a menor ideia, mas, por algum motivo, isso funcionou
+		vim.defer_fn(function()
+			if vim.api.nvim_get_current_buf() == buf then
+				pcall(vim.api.nvim_win_set_cursor, 0, mark)
+			end
+		end, 0.1)
 	end,
 })
 
