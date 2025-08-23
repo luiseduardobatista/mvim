@@ -28,12 +28,12 @@ vim.opt.shiftwidth = 4
 vim.opt.softtabstop = 4
 vim.opt.expandtab = true
 vim.o.termguicolors = true
-
 -- Preview substitutions live, as you type!
-vim.o.inccommand = "split"
+vim.o.inccommand = "nosplit"
 
 -- Show which line your cursor is on
 vim.o.cursorline = true
+vim.opt.cursorlineopt = "number" -- Destaque apenas no número da linha
 
 -- Minimal number of screen lines to keep above and below the cursor.
 vim.o.scrolloff = 10
