@@ -1,7 +1,26 @@
 local now, later = MiniDeps.now, MiniDeps.later
 
 now(function()
-	require("mini.ai").setup()
+	local function ai_buffer(ai_type)
+		local start_line, end_line = 1, vim.fn.line("$")
+		if ai_type == "i" then
+			local first_nonblank, last_nonblank = vim.fn.nextnonblank(start_line), vim.fn.prevnonblank(end_line)
+			if first_nonblank == 0 or last_nonblank == 0 then
+				return { from = { line = start_line, col = 1 } }
+			end
+			start_line, end_line = first_nonblank, last_nonblank
+		end
+
+		local to_col = math.max(vim.fn.getline(end_line):len(), 1)
+		return { from = { line = start_line, col = 1 }, to = { line = end_line, col = to_col } }
+	end
+
+	require("mini.ai").setup({
+		custom_textobjects = {
+			g = ai_buffer,
+		},
+	})
+
 	require("mini.comment").setup()
 	require("mini.move").setup()
 	require("mini.pairs").setup()
@@ -35,9 +54,7 @@ later(function()
 			enable = false,
 		},
 	})
-
 	vim.notify = mini_notify.make_notify()
-
 	require("mini.files").setup({
 		windows = {
 			preview = true,
@@ -72,7 +89,6 @@ later(function()
 		end
 		require("mini.files").open(vim.uv.cwd(), true)
 	end, { desc = "Explorer: Open (CWD)" })
-
 	local miniclue = require("mini.clue")
 	miniclue.setup({
 		triggers = {
