@@ -19,6 +19,9 @@ later(function()
 		end,
 		formatters_by_ft = {
 			lua = { "stylua" },
+			go = { "golines", "gofumpt" },
+			python = { "ruff_format", "ruff_organize_imports" },
+
 			-- Conform can also run multiple formatters sequentially
 			-- python = { "isort", "black" },
 			--
@@ -384,7 +387,7 @@ end)
 
 add({
 	source = "linux-cultist/venv-selector.nvim",
-	checkout = "regexp",
+	checkout = "main",
 	depends = {
 		"nvim-telescope/telescope.nvim",
 		"nvim-lua/plenary.nvim",
