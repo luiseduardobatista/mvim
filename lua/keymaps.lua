@@ -1,38 +1,71 @@
--- [[ Basic Keymaps ]]
---  See `:help vim.keymap.set()`
-
 -- Clear highlights on search when pressing <Esc> in normal mode
---  See `:help hlsearch`
 vim.keymap.set("n", "<Esc>", "<cmd>nohlsearch<CR>")
 
--- Diagnostic keymaps
-vim.keymap.set("n", "<leader>q", vim.diagnostic.setloclist, { desc = "Open diagnostic [Q]uickfix list" })
+local function diagnostics_to_quickfix()
+	vim.diagnostic.setqflist()
+	vim.cmd("copen")
+end
 
-vim.keymap.set("t", "<Esc><Esc>", "<C-\\><C-n>", { desc = "Exit terminal mode" })
+local function buffer_diagnostics_to_loclist()
+	vim.diagnostic.setloclist()
+	vim.cmd("lopen")
+end
 
--- vim.keymap.set("n", "<C-h>", "<C-w><C-h>", { desc = "Move focus to the left window" })
--- vim.keymap.set("n", "<C-l>", "<C-w><C-l>", { desc = "Move focus to the right window" })
--- vim.keymap.set("n", "<C-j>", "<C-w><C-j>", { desc = "Move focus to the lower window" })
--- vim.keymap.set("n", "<C-k>", "<C-w><C-k>", { desc = "Move focus to the upper window" })
-vim.keymap.set("n", "<C-s>", "<cmd>w<cr><esc>", { desc = "Save File" })
+local function lsp_references_to_quickfix()
+	vim.lsp.buf.references(nil, {
+		on_list = function(options)
+			vim.fn.setqflist({}, " ", options)
+			vim.cmd("copen")
+		end,
+	})
+end
 
--- quickfix list
-vim.keymap.set("n", "<leader>xq", function()
-	local success, err = pcall(vim.fn.getqflist({ winid = 0 }).winid ~= 0 and vim.cmd.cclose or vim.cmd.copen)
-	if not success and err then
-		vim.notify(err, vim.log.levels.ERROR)
+local function toggle_quickfix()
+	local windows = vim.fn.getwininfo()
+	for _, win in pairs(windows) do
+		if win.quickfix == 1 then
+			vim.cmd("cclose")
+			return
+		end
 	end
-end, { desc = "Quickfix List" })
+	vim.cmd("copen")
+end
 
-vim.keymap.set("n", "[q", vim.cmd.cprev, { desc = "Previous Quickfix" })
-vim.keymap.set("n", "]q", vim.cmd.cnext, { desc = "Next Quickfix" })
+local function toggle_loclist()
+	local windows = vim.fn.getwininfo()
+	for _, win in pairs(windows) do
+		if win.loclist == 1 then
+			vim.cmd("lclose")
+			return
+		end
+	end
+	vim.cmd("lopen")
+end
 
--- [[ Basic Autocommands ]]
---  See `:help lua-guide-autocommands`
+-- Diagnostics and Quickfix/Loclist keymaps
+vim.keymap.set("n", "<leader>xx", diagnostics_to_quickfix, { desc = "Diagnostics (Quickfix)" })
+vim.keymap.set("n", "<leader>xX", buffer_diagnostics_to_loclist, { desc = "Buffer Diagnostics (Location List)" })
+vim.keymap.set("n", "<leader>cl", lsp_references_to_quickfix, { desc = "LSP References (Quickfix)" })
+vim.keymap.set("n", "<leader>xL", toggle_loclist, { desc = "Toggle Location List" })
+vim.keymap.set("n", "<leader>xQ", toggle_quickfix, { desc = "Toggle Quickfix List" })
 
--- Highlight when yanking (copying) text
---  Try it with `yap` in normal mode
---  See `:help vim.hl.on_yank()`
+-- Diagnostics navigation
+vim.keymap.set("n", "[d", vim.diagnostic.goto_prev, { desc = "Previous Diagnostic" })
+vim.keymap.set("n", "]d", vim.diagnostic.goto_next, { desc = "Next Diagnostic" })
+vim.keymap.set("n", "<leader>xf", function()
+	vim.diagnostic.open_float(nil, {
+		scope = "buffer",
+		header = "Diagnostics",
+		border = "rounded",
+	})
+end, { desc = "Floating Diagnostics" })
+
+-- LSP keymaps
+vim.keymap.set("n", "gd", vim.lsp.buf.definition, { desc = "Go to Definition" })
+vim.keymap.set("n", "gr", vim.lsp.buf.references, { desc = "Go to References" })
+vim.keymap.set("n", "gi", vim.lsp.buf.implementation, { desc = "Go to Implementation" })
+vim.keymap.set("n", "gt", vim.lsp.buf.type_definition, { desc = "Go to Type Definition" })
+
 vim.api.nvim_create_autocmd("TextYankPost", {
 	desc = "Highlight when yanking (copying) text",
 	group = vim.api.nvim_create_augroup("highlight-on-yank", { clear = true }),
