@@ -153,7 +153,7 @@ later(function()
 			width_preview = 30,
 		},
 		options = {
-			use_as_default_explorer = false,
+			use_as_default_explorer = true,
 			permanent_delete = false,
 		},
 		mappings = {
