@@ -407,6 +407,12 @@ later(function()
 	})
 end)
 
+add({ source = "kdheepak/lazygit.nvim", depends = { "nvim-lua/plenary.nvim" } })
+
+later(function()
+	vim.keymap.set("n", "<leader>gg", "<cmd>LazyGit<cr>", { desc = "LazyGit" })
+end)
+
 -- now(function()
 -- 	add("stevearc/oil.nvim")
 -- 	require("oil").setup({
